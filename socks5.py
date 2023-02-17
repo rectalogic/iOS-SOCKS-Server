@@ -107,7 +107,7 @@ class SocksProxy(StreamRequestHandler):
 
         # receive client's auth methods
         version, nmethods = readstruct(sockfile, "!BB")
-        assert version == SOCKS_VERSION
+        assert version == SOCKS_VERSION, f"SOCKS version {version} not recognized"
 
         # get available methods
         methods = readstruct(sockfile, "!%dB" % nmethods)
