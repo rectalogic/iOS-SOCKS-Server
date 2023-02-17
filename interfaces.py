@@ -19,41 +19,36 @@ def find_addresses():
     interfaces = ifaddr.get_adapters()
     iftypes = defaultdict(list)
     for iface in interfaces:
-        if not iface.ips:
+        ips = filter_ipv4(iface.ips)
+        if not ips:
             continue
         if iface.name.startswith('lo'):
             continue
-        # TODO IPv6 support someday
-        if iface.addr.family != socket.AF_INET:
-            continue
         # XXX implement better classification of interfaces
         if iface.name.startswith('en'):
-            iftypes['en'].append(iface)
+            iftypes['en'].extend(ips)
         elif iface.name.startswith('bridge'):
-            iftypes['bridge'].append(iface)
+            iftypes['bridge'].extend(ips)
         else:
-            iftypes['cell'].append(iface)
+            iftypes['cell'].extend(ips)
 
     if iftypes['bridge']:
-        iface = iftypes['bridge'][0]
-        ips = filter_ipv4(iface.ips)
+        ip = iftypes['bridge'][0]
         print("Assuming proxy will be accessed over hotspot (%s) at %s" %
-                (iface.name, ips))
-        proxy_host = ips
+                (iface.name, ip))
+        proxy_host = ip
     elif iftypes['en']:
-        iface = iftypes['en'][0]
-        ips = filter_ipv4(iface.ips)
+        ip = iftypes['en'][0]
         print("Assuming proxy will be accessed over WiFi (%s) at %s" %
-                (iface.name, ips))
-        proxy_host = ips
+                (iface.name, ip))
+        proxy_host = ip
     else:
         print('Warning: could not get WiFi address; assuming %s' % proxy_host)
 
     if iftypes['cell']:
-        iface = iftypes['cell'][0]
-        ips = filter_ipv4(iface.ips)
+        ip = iftypes['cell'][0]
         print("Will connect to servers over interface %s at %s" %
-                (iface.name, ips))
-        connect_host = ips
+                (iface.name, ip))
+        connect_host = ip
 
     return proxy_host, connect_host
