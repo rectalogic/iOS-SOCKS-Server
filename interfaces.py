@@ -1,6 +1,9 @@
 import ifaddr
 from collections import defaultdict
-import socket
+import logging
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 def filter_ipv4(ips):
@@ -24,6 +27,7 @@ def find_addresses():
             continue
         if iface.name.startswith('lo'):
             continue
+        log.info("Found %s with ips %s", iface.name, ips)
         # XXX implement better classification of interfaces
         if iface.name.startswith('en'):
             iftypes['en'].extend(ips)
@@ -34,20 +38,20 @@ def find_addresses():
 
     if iftypes['bridge']:
         ip = iftypes['bridge'][0]
-        print("Assuming proxy will be accessed over hotspot (%s) at %s" %
+        log.info("Assuming proxy will be accessed over hotspot (%s) at %s",
                 (iface.name, ip))
         proxy_host = ip
     elif iftypes['en']:
         ip = iftypes['en'][0]
-        print("Assuming proxy will be accessed over WiFi (%s) at %s" %
+        log.info("Assuming proxy will be accessed over WiFi (%s) at %s",
                 (iface.name, ip))
         proxy_host = ip
     else:
-        print('Warning: could not get WiFi address; assuming %s' % proxy_host)
+        log.warning('Warning: could not get WiFi address; assuming %s', proxy_host)
 
     if iftypes['cell']:
         ip = iftypes['cell'][0]
-        print("Will connect to servers over interface %s at %s" %
+        log.info("Will connect to servers over interface %s at %s",
                 (iface.name, ip))
         connect_host = ip
 
