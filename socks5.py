@@ -9,11 +9,12 @@ import socket
 import struct
 import threading
 from socketserver import ThreadingMixIn, TCPServer, StreamRequestHandler
+import interfaces
 
-# IP over which the proxy will be available (probably WiFi IP)
-PROXY_HOST = "172.20.10.1"
-# IP over which the proxy will attempt to connect to the Internet
-CONNECT_HOST = None
+# PROXY_HOST - IP over which the proxy will be available (probably WiFi IP)
+# ICONNECT_HOST - P over which the proxy will attempt to connect to the Internet
+PROXY_HOST, CONNECT_HOST = interfaces.find_addresses()
+
 # Time out connections after being idle for this long (in seconds)
 IDLE_TIMEOUT = 1800
 
@@ -24,55 +25,6 @@ try:
     on_main_thread(console.set_idle_timer_disabled)(True)
 except ImportError:
     pass
-
-try:
-    # We want the WiFi address so that clients know what IP to use.
-    # We want the non-WiFi (cellular?) address so that we can force network
-    #  traffic to go over that network. This allows the proxy to correctly
-    #  forward traffic to the cell network even when the WiFi network is
-    #  internet-enabled but limited (e.g. firewalled)
-
-    import ifaddrs
-    from collections import defaultdict
-    interfaces = ifaddrs.get_interfaces()
-    iftypes = defaultdict(list)
-    for iface in interfaces:
-        if not iface.addr:
-            continue
-        if iface.name.startswith('lo'):
-            continue
-        # TODO IPv6 support someday
-        if iface.addr.family != socket.AF_INET:
-            continue
-        # XXX implement better classification of interfaces
-        if iface.name.startswith('en'):
-            iftypes['en'].append(iface)
-        elif iface.name.startswith('bridge'):
-            iftypes['bridge'].append(iface)
-        else:
-            iftypes['cell'].append(iface)
-
-    if iftypes['bridge']:
-        iface = iftypes['bridge'][0]
-        print("Assuming proxy will be accessed over hotspot (%s) at %s" %
-              (iface.name, iface.addr.address))
-        PROXY_HOST = iface.addr.address
-    elif iftypes['en']:
-        iface = iftypes['en'][0]
-        print("Assuming proxy will be accessed over WiFi (%s) at %s" %
-              (iface.name, iface.addr.address))
-        PROXY_HOST = iface.addr.address
-    else:
-        print('Warning: could not get WiFi address; assuming %s' % PROXY_HOST)
-
-    if iftypes['cell']:
-        iface = iftypes['cell'][0]
-        print("Will connect to servers over interface %s at %s" %
-              (iface.name, iface.addr.address))
-        CONNECT_HOST = iface.addr.address
-except Exception as e:
-    print(e)
-    interfaces = None
 
 try:
     # TODO: configurable DNS (or find a way to use the cell network's own DNS)
