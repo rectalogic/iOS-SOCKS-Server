@@ -3,7 +3,6 @@ from collections import defaultdict
 import logging
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
 
 
 def filter_ipv4(ips):
@@ -56,3 +55,8 @@ def find_addresses():
         connect_host = ip
 
     return proxy_host, connect_host
+
+
+if __name__ == "__main__":
+    log.setLevel(logging.INFO)
+    log.info(find_addresses())
