@@ -37,21 +37,18 @@ def find_addresses():
 
     if iftypes['bridge']:
         ip = iftypes['bridge'][0]
-        log.info("Assuming proxy will be accessed over hotspot (%s) at %s",
-                (iface.name, ip))
+        log.info("Assuming proxy will be accessed over hotspot (%s) at %s", iface.name, ip)
         proxy_host = ip
     elif iftypes['en']:
         ip = iftypes['en'][0]
-        log.info("Assuming proxy will be accessed over WiFi (%s) at %s",
-                (iface.name, ip))
+        log.info("Assuming proxy will be accessed over WiFi (%s) at %s", iface.name, ip)
         proxy_host = ip
     else:
         log.warning('Warning: could not get WiFi address; assuming %s', proxy_host)
 
     if iftypes['cell']:
         ip = iftypes['cell'][0]
-        log.info("Will connect to servers over interface %s at %s",
-                (iface.name, ip))
+        log.info("Will connect to servers over interface %s at %s", iface.name, ip)
         connect_host = ip
 
     return proxy_host, connect_host
