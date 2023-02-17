@@ -1,4 +1,4 @@
-import ifaddrs
+import ifaddr
 from collections import defaultdict
 import socket
 
@@ -16,7 +16,7 @@ def find_addresses():
     proxy_host = "172.20.10.1"
     connect_host = None
 
-    interfaces = ifaddrs.get_adapters()
+    interfaces = ifaddr.get_adapters()
     iftypes = defaultdict(list)
     for iface in interfaces:
         if not iface.ips:
